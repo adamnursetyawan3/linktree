@@ -1,0 +1,1183 @@
+/* ==========================================================================
+   SIMPLE LINKTREE NOIR // ADAM NUR SETYAWAN (@ADAMNURS_)
+   ARCHITECTURE: ZERO BORDER RADIUS, HIGH CONTRAST, ABSOLUTE SYMMETRY & CENTERING
+   NO MODAL POP-UPS, ZERO CLUTTER
+   ========================================================================== */
+
+:root {
+    /* TIPOGRAFI MONOSPACE */
+    --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-main: var(--font-mono);
+    --font-heading: var(--font-mono);
+
+    /* BACKGROUND & SURFACES */
+    --canvas-bg: #0B101B;
+    --surface-card: #111928;
+    --surface-card-glass: rgba(17, 25, 40, 0.90);
+    --hover-surface: #172033;
+    --border-default: #1D293D;
+    --border-active: #00B8DB;
+
+    /* AKSEN & AKSI */
+    --primary-cyan: #00B8DB;
+    --primary-cyan-hover: #00D0F5;
+    --main-action-bg: #008B9E;
+    --main-action-hover: #009CB0;
+    --dark-contrast-text: #020618;
+
+    /* TIPOGRAFI TEKS */
+    --text-primary: #F1F5F9;
+    --text-muted: #CAD5E2;
+    --text-subdued: #64748B;
+
+    /* STATUS & FEEDBACK */
+    --status-success-bg: rgba(16, 185, 129, 0.1);
+    --status-success-border: rgba(16, 185, 129, 0.3);
+    --status-success-text: #34D399;
+    --status-error-bg: rgba(136, 19, 55, 0.4);
+    --status-error-border: #9F1239;
+    --status-error-text: #FDA4AF;
+
+    /* SYMMETRICAL GUIDE RAIL WIDTH */
+    --content-max-width: 540px;
+}
+
+/* ZERO BORDER RADIUS DISCIPLINE ON EVERYTHING */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-mono);
+    border-radius: 0px !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+    background-color: var(--canvas-bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    position: relative;
+    user-select: none;
+}
+
+/* BACKGROUND VIDEO */
+#bg-video {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -3;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.24;
+    pointer-events: none;
+}
+
+/* SUBTLE CYBER-NOIR GRID OVERLAY */
+.cyber-grid-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-color: rgba(8, 12, 20, 0.45);
+    background-image: 
+        linear-gradient(rgba(0, 184, 219, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 184, 219, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+}
+
+/* APP WRAPPER: CENTERED FLEX CONTAINER */
+.app-wrapper {
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1.5rem 1rem 7.5rem 1rem;
+    z-index: 1;
+}
+
+/* TOP HUD BAR */
+.top-hud-bar {
+    width: 100%;
+    max-width: var(--content-max-width);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    z-index: 10;
+}
+
+.hud-clock-pill,
+.hud-logo-tag {
+    height: 34px;
+    background: rgba(11, 16, 27, 0.9);
+    border: 1px solid var(--border-default);
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-cyan);
+    letter-spacing: 0.08em;
+    font-family: var(--font-mono);
+}
+
+.hud-clock-pill span,
+.hud-logo-tag span {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    color: var(--primary-cyan);
+}
+
+.hud-clock-icon {
+    color: var(--primary-cyan);
+    flex-shrink: 0;
+}
+
+.hud-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hud-circle-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    background: rgba(11, 16, 27, 0.9);
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.hud-circle-btn:hover {
+    background: var(--hover-surface);
+    border-color: var(--primary-cyan);
+    color: var(--primary-cyan);
+}
+
+/* MAIN CONTENT AREA */
+.main-content-area {
+    width: 100%;
+    max-width: var(--content-max-width);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* PROFILE HERO */
+.profile-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.avatar-frame-outer {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    margin-bottom: 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.corner-bracket {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--primary-cyan);
+    z-index: 2;
+}
+
+.corner-bracket.top-left {
+    top: -1px;
+    left: -1px;
+}
+
+.corner-bracket.top-right {
+    top: -1px;
+    right: -1px;
+}
+
+.corner-bracket.bottom-left {
+    bottom: -1px;
+    left: -1px;
+}
+
+.corner-bracket.bottom-right {
+    bottom: -1px;
+    right: -1px;
+}
+
+.avatar-wrapper {
+    width: 90px;
+    height: 90px;
+    background: #0B101B;
+    border: 2px solid var(--primary-cyan);
+    padding: 3px;
+    box-shadow: 0 0 24px rgba(0, 184, 219, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #080C14;
+    display: block;
+}
+
+.display-name {
+    font-size: clamp(1.2rem, 5vw, 1.55rem);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    word-break: break-word;
+}
+
+.handle-text {
+    font-size: 0.88rem;
+    color: var(--primary-cyan);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+}
+
+.role-headline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: clamp(10.5px, 2.8vw, 11.5px);
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+}
+
+.headline-divider {
+    color: var(--primary-cyan);
+}
+
+.location-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+}
+
+.profile-bio-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    max-width: 440px;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+
+/* ==========================================================================
+   WHATSAPP FEATURED CARD (NO LIVE TEXT, SYMMETRICAL & PRECISE)
+   ========================================================================== */
+.wa-channel-card {
+    width: 100%;
+    margin-bottom: 0.85rem;
+    background: rgba(17, 25, 40, 0.92);
+    border: 1px solid var(--border-default);
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    transition: border-color 0.2s ease;
+}
+
+.wa-tab-panel {
+    animation: waTabFade 0.16s ease-out;
+}
+
+@keyframes waTabFade {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wa-channel-card:hover {
+    border-color: var(--primary-cyan);
+}
+
+.wa-card-top-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 6px;
+    border-bottom: 1px solid var(--border-default);
+    padding-bottom: 10px;
+    width: 100%;
+    min-width: 0;
+}
+
+.wa-tabs-switcher {
+    display: inline-flex;
+    align-items: center;
+    background: #080C14;
+    border: 1px solid var(--border-default);
+    gap: 2px;
+    padding: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.wa-tab-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 6px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: clamp(8.5px, 2.3vw, 10px);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.wa-tab-btn svg,
+.wa-tab-btn i {
+    flex-shrink: 0;
+}
+
+.wa-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.wa-tab-btn.active {
+    background: var(--surface-card);
+    color: var(--primary-cyan);
+    border: 1px solid var(--primary-cyan);
+}
+
+.wa-top-tag {
+    height: 28px;
+    background: #0B101B;
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+    font-size: clamp(8px, 2.1vw, 9.5px);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.wa-channel-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.wa-avatar-container {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    min-height: 52px;
+    flex-shrink: 0;
+    background: #080C14;
+    border: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.wa-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.wa-avatar-fallback {
+    width: 100%;
+    height: 100%;
+    background: #0E1524;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wa-info-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.wa-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wa-channel-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wa-verified-badge {
+    color: var(--primary-cyan);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.wa-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+.wa-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 22px;
+    font-size: 10px;
+    padding: 0 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.wa-followers-pill {
+    background: rgba(0, 184, 219, 0.12);
+    color: var(--primary-cyan);
+    border: 1px solid rgba(0, 184, 219, 0.3);
+}
+
+.discord-online-pill {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22C55E;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.discord-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22C55E;
+    box-shadow: 0 0 8px #22C55E;
+    display: inline-block;
+    animation: discordPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes discordPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.65;
+    }
+}
+
+.discord-members-pill {
+    background: rgba(88, 101, 242, 0.12);
+    color: #8EA1E1;
+    border: 1px solid rgba(88, 101, 242, 0.35);
+}
+
+.discord-tag-pill {
+    background: rgba(14, 21, 36, 0.85);
+    color: var(--text-muted);
+    border: 1px solid var(--border-default);
+}
+
+.wa-description-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.45;
+    text-transform: lowercase;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* TOMBOL AKSI SIMETRIS & PRESISI TANPA IKON TAMBAHAN */
+.wa-actions-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.wa-join-btn {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: var(--main-action-bg);
+    color: var(--dark-contrast-text);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 18px;
+    text-decoration: none;
+    transition: background 0.15s ease, transform 0.08s ease;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.wa-join-btn:hover {
+    background: var(--main-action-hover);
+    color: var(--dark-contrast-text);
+}
+
+.wa-join-btn.discord-join-btn {
+    background: #5865F2;
+    color: #FFFFFF;
+}
+
+.wa-join-btn.discord-join-btn:hover {
+    background: #4752C4;
+    color: #FFFFFF;
+}
+
+.wa-join-btn:active {
+    transform: scale(0.985);
+}
+
+.wa-btn-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.wa-copy-btn {
+    height: 44px;
+    min-width: 108px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #080C14;
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 14px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.wa-copy-btn:hover {
+    background: #111A2E;
+    border-color: var(--primary-cyan);
+    color: var(--text-primary);
+}
+
+.wa-copy-btn:active {
+    transform: scale(0.985);
+}
+
+/* ==========================================================================
+   CLEAN & SYMMETRICAL LINKTREE BUTTONS
+   ========================================================================== */
+.simple-links-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 0.5rem;
+}
+
+.linktree-btn {
+    width: 100%;
+    height: 56px;
+    min-height: 56px;
+    background: rgba(17, 25, 40, 0.92);
+    border: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.linktree-btn:hover {
+    background: var(--hover-surface);
+    border-color: var(--primary-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
+                0 0 12px rgba(0, 184, 219, 0.15);
+}
+
+.linktree-btn:active {
+    transform: translateY(0) scale(0.99);
+}
+
+.linktree-btn:hover .linktree-title {
+    color: var(--primary-cyan);
+}
+
+.linktree-btn:hover .linktree-arrow {
+    color: var(--primary-cyan);
+    transform: translate(2px, -2px);
+}
+
+.linktree-icon-box {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    background: #0B101B;
+    border: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-cyan);
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-right: 14px;
+}
+
+.linktree-text-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.linktree-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s ease;
+}
+
+.linktree-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: lowercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.linktree-arrow {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-subdued);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+/* ==========================================================================
+   PEMISAH BAGIAN: TULISAN PROJECT DI TENGAH-TENGAH
+   ========================================================================== */
+.section-divider-center {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 1.5rem 0 0.85rem 0;
+}
+
+.section-divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+}
+
+.section-divider-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    color: var(--primary-cyan);
+    text-transform: uppercase;
+    padding: 5px 16px;
+    background: rgba(0, 184, 219, 0.06);
+    border: 1px solid rgba(0, 184, 219, 0.25);
+    box-shadow: 0 0 12px rgba(0, 184, 219, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   CENTERED FOOTER CREDITS
+   ========================================================================== */
+.footer-credits {
+    margin-top: 2rem !important;
+    text-align: center !important;
+    width: 100% !important;
+    max-width: var(--content-max-width) !important;
+    border-top: 1px solid var(--border-default) !important;
+    padding-top: 1.25rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+.footer-credits p,
+.footer-credits .footer-text {
+    font-size: 11px !important;
+    color: var(--text-muted) !important;
+    text-transform: lowercase !important;
+    letter-spacing: 0.04em !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+}
+
+.footer-credits strong {
+    color: var(--primary-cyan) !important;
+    text-transform: uppercase !important;
+}
+
+.footer-credits .footer-indicator {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+    font-size: 10px !important;
+    color: var(--text-subdued) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    text-align: center !important;
+}
+
+.footer-credits .footer-indicator span {
+    text-align: center !important;
+}
+
+/* ==========================================================================
+   BOTTOM AUDIO CAPSULE (NO POP-UPS)
+   ========================================================================== */
+.ios-pill-dock {
+    position: fixed;
+    bottom: 16px;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+    max-width: var(--content-max-width) !important;
+    padding: 0 1rem;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ios-island-capsule {
+    width: 100% !important;
+    height: 52px;
+    background: rgba(11, 16, 27, 0.96);
+    border: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.ios-island-capsule:hover {
+    border-color: var(--primary-cyan);
+    background: #0E1524;
+}
+
+/* LEFT: EXACTLY 36×36PX ARTWORK FRAME */
+.ios-capsule-art {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.ios-capsule-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.ios-capsule-cover.playing {
+    transform: none;
+}
+
+.ios-capsule-cover:hover {
+    transform: scale(1.06);
+}
+
+.ios-capsule-fallback {
+    width: 100%;
+    height: 100%;
+    background: #0E1524;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* CENTER: TYPOGRAPHY CENTERED VERTICALLY */
+.ios-capsule-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    text-align: left;
+}
+
+.ios-capsule-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ios-capsule-artist {
+    font-size: 10px;
+    color: var(--primary-cyan);
+    text-transform: lowercase;
+    letter-spacing: 0.03em;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* RIGHT: SOUNDWAVE GRAPHIC + EXACTLY 36×36PX PLAY BUTTON */
+.ios-capsule-soundwave {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 20px;
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+.ios-wave-bar {
+    width: 2.5px;
+    height: 100%;
+    background: var(--primary-cyan);
+    transform-origin: center;
+    will-change: transform;
+    transition: transform 0.2s ease;
+}
+
+.ios-wave-bar.animated {
+    animation: cyber-soundwave 1s ease-in-out infinite alternate;
+}
+
+@keyframes cyber-soundwave {
+    0% { transform: scaleY(0.2); opacity: 0.6; }
+    50% { transform: scaleY(0.95); opacity: 1; }
+    100% { transform: scaleY(0.4); opacity: 0.8; }
+}
+
+.ios-capsule-play-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.ios-capsule-play-btn:hover {
+    background: var(--hover-surface);
+    border-color: var(--primary-cyan);
+    color: var(--primary-cyan);
+}
+
+.ios-capsule-play-btn svg {
+    display: block;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   MODAL PRATINJAU COVER LENGKAP KETIKA DIKLIK
+   ========================================================================== */
+.cover-lightbox-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(4, 7, 13, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: waTabFade 0.16s ease-out;
+}
+
+.cover-lightbox-card {
+    background: #0B101B;
+    border: 1px solid var(--border-default);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.85);
+    max-width: 380px;
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cover-lightbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.cover-lightbox-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cover-lightbox-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cover-lightbox-artist {
+    font-size: 11px;
+    color: var(--primary-cyan);
+    letter-spacing: 0.03em;
+}
+
+.cover-lightbox-close {
+    width: 32px;
+    height: 32px;
+    background: #111827;
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cover-lightbox-close:hover {
+    color: #FFF;
+    border-color: var(--primary-cyan);
+    background: #1A2333;
+}
+
+.cover-lightbox-img-box {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #04070D;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cover-lightbox-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS UNTUK LAYAR KECIL & MOBILE SEMPIT
+   ========================================================================== */
+@media (max-width: 420px) {
+    .app-wrapper {
+        padding: 1.15rem 0.75rem 7rem 0.75rem;
+    }
+
+    .wa-channel-card {
+        padding: 10px;
+    }
+
+    .wa-card-top-controls {
+        gap: 4px;
+    }
+
+    .wa-tab-btn {
+        padding: 0 4px;
+        gap: 3px;
+        font-size: 8.5px;
+        letter-spacing: 0.02em;
+    }
+
+    .wa-top-tag {
+        padding: 0 5px;
+        font-size: 8px;
+        letter-spacing: 0.02em;
+    }
+
+    .wa-join-btn {
+        padding: 0 12px;
+        font-size: 11px;
+        gap: 6px;
+    }
+
+    .wa-copy-btn {
+        min-width: 84px;
+        padding: 0 10px;
+        font-size: 10px;
+    }
+
+    .linktree-btn {
+        height: 52px;
+        min-height: 52px;
+        padding: 0 11px;
+    }
+
+    .linktree-icon-box {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 340px) {
+    .wa-top-tag {
+        display: none;
+    }
+
+    .wa-tabs-switcher {
+        width: 100%;
+    }
+}

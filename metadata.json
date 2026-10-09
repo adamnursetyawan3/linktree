@@ -1,0 +1,6 @@
+{
+  "name": "Nimzz - Linktree",
+  "description": "Official profile, verified links, and media player of NimzzAI",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
