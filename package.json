@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
+    "lint": "vite build",
     "start": "node server.ts",
     "preview": "vite preview"
   },

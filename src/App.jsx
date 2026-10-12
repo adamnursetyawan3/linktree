@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { settings } from './settings.js';
 import Navbar from './components/Navbar.jsx';
 import HeroSection from './components/HeroSection.jsx';
+import SummaryStrip from './components/SummaryStrip.jsx';
+import HeroTerminal from './components/HeroTerminal.jsx';
 import StackMarquee from './components/StackMarquee.jsx';
 import MetricsDashboard from './components/MetricsDashboard.jsx';
 import ProjectGrid from './components/ProjectGrid.jsx';
@@ -14,6 +16,20 @@ import CommandPalette from './components/CommandPalette.jsx';
 import PlayerSheet from './components/PlayerSheet.jsx';
 import Toast from './components/Toast.jsx';
 import { playClickHaptic } from './utils/audioHaptic.js';
+
+// URUTAN RENDER RESMI UNTUK PENOMORAN SEKSI (01 - 05) TANPA LOMPAT
+const NUMBERED_SECTIONS = [
+    'ringkasan',
+    'metrik',
+    'project',
+    'komunitas',
+    'kontak'
+];
+
+const getSectionNumber = (id) => {
+    const idx = NUMBERED_SECTIONS.indexOf(id);
+    return idx !== -1 ? String(idx + 1).padStart(2, '0') : '';
+};
 
 export const App = () => {
     const audioRef = useRef(null);
@@ -166,11 +182,32 @@ export const App = () => {
                 {/* HERO SECTION */}
                 <HeroSection soundEnabled={isPlaying} />
 
-                {/* 01 / STACK MARQUEE */}
+                {/* 01 / STRIP RINGKASAN SISTEM */}
+                <SummaryStrip 
+                    soundEnabled={isPlaying} 
+                    sectionNumber={getSectionNumber('ringkasan')}
+                />
+
+                {/* TERMINAL INTERAKTIF NOIR */}
+                <HeroTerminal 
+                    soundEnabled={isPlaying}
+                    onSelectProject={setSelectedProjectIndex}
+                    onSelectSocial={(id) => {
+                        setExpandedSocialId(id);
+                        const el = document.getElementById('kontak');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    onShowToast={showToast}
+                />
+
+                {/* STACK MARQUEE */}
                 <StackMarquee />
 
                 {/* 02 / METRIK & ANALITIK SISTEM */}
-                <MetricsDashboard soundEnabled={isPlaying} />
+                <MetricsDashboard 
+                    soundEnabled={isPlaying} 
+                    sectionNumber={getSectionNumber('metrik')}
+                />
 
                 {/* 03 / PROJECT GRID (INTI PORTOFOLIO) */}
                 <ProjectGrid 
@@ -178,23 +215,26 @@ export const App = () => {
                     onShowToast={showToast}
                     selectedProjectIndex={selectedProjectIndex}
                     onSelectProject={setSelectedProjectIndex}
+                    sectionNumber={getSectionNumber('project')}
                 />
 
-                {/* 03 / KOMUNITAS (BENTO DASHBOARD) */}
+                {/* 04 / KOMUNITAS (BENTO DASHBOARD) */}
                 <CommunityBento 
                     isPlaying={isPlaying}
                     onTogglePlay={togglePlay}
                     soundEnabled={isPlaying}
                     onShowToast={showToast}
                     onOpenPlayerSheet={() => setIsPlayerSheetOpen(true)}
+                    sectionNumber={getSectionNumber('komunitas')}
                 />
 
-                {/* 04 / KONTAK / LINK EDITORIAL (KARTU SOSIAL INTERAKTIF) */}
+                {/* 05 / KONTAK / LINK EDITORIAL (KARTU SOSIAL INTERAKTIF) */}
                 <ContactEditorial 
                     soundEnabled={isPlaying}
                     onShowToast={showToast}
                     expandedSocialId={expandedSocialId}
                     onToggleSocial={setExpandedSocialId}
+                    sectionNumber={getSectionNumber('kontak')}
                 />
 
                 {/* FOOTER PORTOFOLIO */}

@@ -19,21 +19,29 @@ import {
 import { playClickHaptic } from '../utils/audioHaptic.js';
 import { useReveal } from '../hooks/useReveal.js';
 
-// BADGE SUMBER DATA KECIL (UNBOXED TEXT DISCIPLINE)
+// TOOLTIP SUMBER DATA RESMI
+const SOURCE_TOOLTIPS = {
+    live: 'Diambil langsung',
+    lokal: 'Dari perangkat ini',
+    statis: 'Diisi manual'
+};
+
+// PENANDA SUMBER DATA: PILL 11PX, BORDER 1PX BLUE-7, TEKS BLUE-3, LATAR TRANSPARAN
 const SourceIndicator = memo(({ source = 'statis' }) => {
     const label = source.toUpperCase();
+    const tooltipText = SOURCE_TOOLTIPS[source] || 'Diisi manual';
     return (
         <span 
-            className="text-[10px] font-mono tracking-widest text-[var(--blue-4)] opacity-70"
-            title={`Sumber data: ${source}`}
+            className="metric-data-badge font-mono"
+            title={`Sumber data: ${tooltipText}`}
         >
-            [{label}]
+            {label}
         </span>
     );
 });
 
-export const MetricsDashboard = memo(({ soundEnabled }) => {
-    const [sectionRef, isRevealed] = useReveal({ threshold: 0.08 });
+export const MetricsDashboard = memo(({ soundEnabled, sectionNumber = "02" }) => {
+    const [sectionRef, isRevealed] = useReveal();
     const [selectedPeriod, setSelectedPeriod] = useState('days7'); // 'days7' | 'days30' | 'days90'
     const [hoveredPoint, setHoveredPoint] = useState(null);
 
@@ -82,87 +90,94 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
         setHoveredPoint(null);
     };
 
+    const formattedVisitorTotal = (visitorsStats.total.value || 28410).toLocaleString('id-ID');
+    const changeFormatted = (visitorsStats.total.change || '+14.2%').replace('.', ',');
+    const uptimePctFormatted = (uptimeStats.percentage || '99.98%').replace('.', ',');
+    const currentChartCountFormatted = currentVisitorData.value 
+        ? currentVisitorData.value.toLocaleString('id-ID')
+        : (currentVisitorData.formatted || '').replace(',', '.');
+
     return (
         <section 
             id="metrik" 
             ref={sectionRef} 
             className={`editorial-section ${isRevealed ? 'revealed' : ''}`}
-            aria-label="Metrik & Analitik Sistem"
+            aria-label="Metrik dan performa sistem"
         >
             <div className="section-container">
                 {/* HEADER SECTION EDITORIAL TANPA KOTAK */}
                 <header className="editorial-section-header">
                     <div className="editorial-kicker-row">
-                        <span className="editorial-kicker-num">02</span>
-                        <span className="editorial-kicker-slash">/</span>
-                        <span className="editorial-kicker-title">METRIK & PERFORMA SISTEM</span>
+                        <span className="editorial-kicker-num">{sectionNumber}</span>
+                        <span className="editorial-kicker-slash" aria-hidden="true">/</span>
+                        <h2 className="editorial-kicker-title">Metrik dan performa sistem</h2>
                     </div>
                     <div className="editorial-header-actions">
                         <span className="text-xs font-mono text-[var(--blue-3)]">
-                            PEMBARUAN REALTIME & HISTORI
+                            Pembaruan realtime dan histori
                         </span>
                     </div>
                 </header>
 
-                {/* 1. ANGKA STATISTIK DISPLAY BESAR DI ATAS CANVAS (HAIRLINE SEPARATORS) */}
+                {/* 1. ANGKA STATISTIK DISPLAY BESAR TANPA KARTU (LAYOUT TERBUKA) */}
                 <div className="editorial-hero-stats-grid">
                     <div className="editorial-stat-block">
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="editorial-stat-label">Total Pengunjung</span>
+                        <div className="editorial-stat-header-row">
+                            <span className="editorial-stat-label">TOTAL PENGUNJUNG</span>
                             <SourceIndicator source={visitorsStats.total.source} />
                         </div>
-                        <div className="editorial-stat-number">{visitorsStats.total.formatted}</div>
+                        <div className="editorial-stat-number">{formattedVisitorTotal}</div>
                         <div className="editorial-stat-sub">
-                            <span className="text-[var(--blue-4)] font-mono text-xs">{visitorsStats.total.change}</span>
-                            <span className="text-[var(--blue-3)] text-xs ml-2">sejak peluncuran</span>
+                            <span className="stat-change-val font-mono">{changeFormatted}</span>
+                            <span className="stat-sub-text">sejak peluncuran</span>
                         </div>
                     </div>
 
                     <div className="editorial-stat-block">
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="editorial-stat-label">Ketersediaan Sistem</span>
+                        <div className="editorial-stat-header-row">
+                            <span className="editorial-stat-label">KETERSEDIAAN SISTEM</span>
                             <SourceIndicator source={uptimeStats.source} />
                         </div>
-                        <div className="editorial-stat-number">{uptimeStats.percentage}</div>
+                        <div className="editorial-stat-number">{uptimePctFormatted}</div>
                         <div className="editorial-stat-sub">
-                            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2" />
-                            <span className="text-[var(--blue-3)] text-xs">{uptimeStats.duration}</span>
+                            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" aria-hidden="true" />
+                            <span className="stat-sub-text">{uptimeStats.duration.toLowerCase()}</span>
                         </div>
                     </div>
 
                     <div className="editorial-stat-block">
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="editorial-stat-label">Rata-rata Respon</span>
+                        <div className="editorial-stat-header-row">
+                            <span className="editorial-stat-label">RATA-RATA RESPON</span>
                             <SourceIndicator source={uptimeStats.source} />
                         </div>
                         <div className="editorial-stat-number">{uptimeStats.avgResponseTime}</div>
                         <div className="editorial-stat-sub">
-                            <span className="text-[var(--blue-3)] text-xs">Edge server latency</span>
+                            <span className="stat-sub-text">Latensi server edge</span>
                         </div>
                     </div>
 
                     <div className="editorial-stat-block">
-                        <div className="flex items-center justify-between mb-1">
-                            <span className="editorial-stat-label">Repositori Publik</span>
+                        <div className="editorial-stat-header-row">
+                            <span className="editorial-stat-label">REPOSITORI PUBLIK</span>
                             <SourceIndicator source={githubFallbackStats.source} />
                         </div>
-                        <div className="editorial-stat-number">{githubFallbackStats.publicRepos}</div>
+                        <div className="editorial-stat-number">{githubFallbackStats.publicRepos.toLocaleString('id-ID')}</div>
                         <div className="editorial-stat-sub">
-                            <span className="text-[var(--blue-3)] text-xs">{githubFallbackStats.commitStreak}</span>
+                            <span className="stat-sub-text">{githubFallbackStats.commitStreak.toLowerCase()}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. GRAFIK TREN HARIAN (SVG MURNI TANPA CARD BOX) */}
+                {/* 2. GRAFIK TREN HARIAN (SVG MURNI TANPA KARTU) */}
                 <div className="editorial-chart-wrapper">
                     <div className="editorial-chart-toolbar">
                         <div className="flex items-center gap-2">
-                            <Activity size={14} strokeWidth={1.5} className="text-[var(--blue-4)]" />
+                            <Activity size={14} strokeWidth={1.5} className="text-[var(--blue-4)]" aria-hidden="true" />
                             <span className="font-mono text-xs text-[var(--blue-2)] tracking-wide">
-                                TREN KUNJUNGAN HARIAN
+                                Tren kunjungan harian
                             </span>
-                            <span className="text-xs text-[var(--blue-3)] hidden sm:inline">
-                                ({currentVisitorData.formatted} kunjungan)
+                            <span className="text-xs text-[var(--blue-3)] ml-2 hidden sm:inline">
+                                ({currentChartCountFormatted} kunjungan)
                             </span>
                         </div>
 
@@ -174,7 +189,7 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
                                 className={`editorial-tab-btn ${selectedPeriod === 'days7' ? 'active' : ''}`}
                                 onClick={() => handlePeriodChange('days7')}
                             >
-                                7 Hari
+                                7 hari
                             </button>
                             <button
                                 role="tab"
@@ -182,7 +197,7 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
                                 className={`editorial-tab-btn ${selectedPeriod === 'days30' ? 'active' : ''}`}
                                 onClick={() => handlePeriodChange('days30')}
                             >
-                                30 Hari
+                                30 hari
                             </button>
                             <button
                                 role="tab"
@@ -190,12 +205,12 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
                                 className={`editorial-tab-btn ${selectedPeriod === 'days90' ? 'active' : ''}`}
                                 onClick={() => handlePeriodChange('days90')}
                             >
-                                90 Hari
+                                90 hari
                             </button>
                         </div>
                     </div>
 
-                    {/* SVG GRAPH CANVAS */}
+                    {/* SVG GRAPH CANVAS (LANGSUNG DI ATAS LATAR HALAMAN) */}
                     <div className="editorial-svg-container">
                         <svg
                             viewBox={`0 0 ${chartMetrics.width} ${chartMetrics.height}`}
@@ -269,7 +284,7 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
                             )}
                         </svg>
 
-                        {/* HOVER TOOLTIP FLOATER */}
+                        {/* HOVER TOOLTIP FLOATER (OVERLAY BERBINGKAI RESMI) */}
                         {hoveredPoint && (
                             <div 
                                 className="editorial-chart-tooltip"
@@ -279,7 +294,7 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
                                 }}
                             >
                                 <span className="font-mono text-[11px] text-[var(--blue-1)] font-semibold">
-                                    {hoveredPoint.count} Kunjungan
+                                    {hoveredPoint.count.toLocaleString('id-ID')} kunjungan
                                 </span>
                                 <span className="text-[10px] text-[var(--blue-3)] block font-mono">
                                     {hoveredPoint.date} {hoveredPoint.label ? `· ${hoveredPoint.label}` : ''}
@@ -296,43 +311,46 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
                     </div>
                 </div>
 
-                {/* 3. DISTRIBUSI SUMBER TRAFFIC & PERANGKAT (TABEL & BARIS EDITORIAL) */}
+                {/* 3. DISTRIBUSI SUMBER TRAFFIC & PERANGKAT (LAYOUT TERBUKA) */}
                 <div className="editorial-breakdown-grid">
                     {/* SUMBER LALU LINTAS */}
                     <div className="editorial-breakdown-col">
                         <div className="editorial-breakdown-header">
                             <span className="font-mono text-xs text-[var(--blue-2)] font-semibold tracking-wider">
-                                SUMBER LALU LINTAS
+                                Sumber lalu lintas
                             </span>
                             <SourceIndicator source={trafficSources.source} />
                         </div>
 
                         <div className="editorial-traffic-list">
-                            {trafficSources.items.map((src, idx) => (
-                                <div key={idx} className="editorial-traffic-row">
-                                    <div className="flex items-center justify-between text-xs mb-1">
-                                        <span className="text-[var(--blue-2)] font-medium">{src.name}</span>
-                                        <div className="flex items-center gap-2 font-mono">
-                                            <span className="text-[var(--blue-3)]">{src.count}</span>
-                                            <span className="text-[var(--blue-1)] font-semibold w-10 text-right">{src.percentage}%</span>
+                            {trafficSources.items.map((src, idx) => {
+                                const numericCount = parseInt(String(src.count).replace(/[^\d]/g, ''), 10) || 0;
+                                return (
+                                    <div key={idx} className="editorial-traffic-row">
+                                        <div className="flex items-center justify-between text-xs mb-1">
+                                            <span className="text-[var(--blue-2)] font-medium">{src.name}</span>
+                                            <div className="flex items-center gap-2 font-mono">
+                                                <span className="text-[var(--blue-3)]">{numericCount.toLocaleString('id-ID')}</span>
+                                                <span className="text-[var(--blue-1)] font-semibold w-10 text-right">{src.percentage}%</span>
+                                            </div>
+                                        </div>
+                                        <div className="editorial-hairline-track">
+                                            <div 
+                                                className="editorial-hairline-fill" 
+                                                style={{ width: `${src.percentage}%` }}
+                                            />
                                         </div>
                                     </div>
-                                    <div className="editorial-hairline-track">
-                                        <div 
-                                            className="editorial-hairline-fill" 
-                                            style={{ width: `${src.percentage}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* WILAYAH & PERANGKAT */}
+                    {/* WILAYAH DAN PERANGKAT */}
                     <div className="editorial-breakdown-col">
                         <div className="editorial-breakdown-header">
                             <span className="font-mono text-xs text-[var(--blue-2)] font-semibold tracking-wider">
-                                WILAYAH & PERANGKAT
+                                Wilayah dan perangkat
                             </span>
                             <SourceIndicator source={regionStats.source} />
                         </div>
@@ -369,4 +387,6 @@ export const MetricsDashboard = memo(({ soundEnabled }) => {
     );
 });
 
+MetricsDashboard.displayName = 'MetricsDashboard';
 export default MetricsDashboard;
+

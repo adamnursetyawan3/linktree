@@ -18,8 +18,72 @@ export const HeroSection = memo(({ soundEnabled }) => {
     const heroSectionRef = useRef(null);
     const reticleRef = useRef(null);
     const avatarCoreRef = useRef(null);
+    const frameOuterRef = useRef(null);
+    const frameMidRef = useRef(null);
+    const frameInnerRef = useRef(null);
+    const stackRingRef = useRef(null);
     const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
     const [isHeroPaused, setIsHeroPaused] = useState(false);
+
+    // PENGECEKAN KONSENTRISITAS VISUAL (DI DEV): PUSAT SEMUA LAYER HARUS SAMA <= 1PX TOLERANSI
+    useEffect(() => {
+        const verifyConcentricity = () => {
+            const getCenter = (el) => {
+                if (!el) return null;
+                const r = el.getBoundingClientRect();
+                return {
+                    x: r.left + r.width * 0.5,
+                    y: r.top + r.height * 0.5,
+                    w: r.width,
+                    h: r.height
+                };
+            };
+
+            const stage = getCenter(reticleRef.current);
+            const avatar = getCenter(avatarCoreRef.current);
+            const outer = getCenter(frameOuterRef.current);
+            const mid = getCenter(frameMidRef.current);
+            const inner = getCenter(frameInnerRef.current);
+            const ring = getCenter(stackRingRef.current);
+
+            if (stage && avatar) {
+                const targets = [
+                    { name: 'avatar', center: avatar },
+                    outer && { name: 'outer-frame', center: outer },
+                    mid && { name: 'mid-frame', center: mid },
+                    inner && { name: 'inner-frame', center: inner },
+                    ring && { name: 'stack-ring', center: ring }
+                ].filter(Boolean);
+
+                const report = targets.map(t => {
+                    const dx = Math.abs(t.center.x - stage.x);
+                    const dy = Math.abs(t.center.y - stage.y);
+                    return {
+                        layer: t.name,
+                        dx: Number(dx.toFixed(2)),
+                        dy: Number(dy.toFixed(2)),
+                        aligned: dx <= 1.0 && dy <= 1.0
+                    };
+                });
+
+                if (import.meta.env?.DEV) {
+                    console.info('[RETICLE CONCENTRIC CHECK]', {
+                        stageCenter: { x: Number(stage.x.toFixed(1)), y: Number(stage.y.toFixed(1)) },
+                        stageSize: { w: Number(stage.w.toFixed(1)), h: Number(stage.h.toFixed(1)) },
+                        allLayersAligned: report.every(r => r.aligned),
+                        layers: report
+                    });
+                }
+            }
+        };
+
+        const timer = setTimeout(verifyConcentricity, 600);
+        window.addEventListener('resize', verifyConcentricity);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', verifyConcentricity);
+        };
+    }, []);
 
     // CEK UKURAN LAYAR (>= 900PX UNTUK MODE DESKTOP)
     const [isDesktop, setIsDesktop] = useState(() => {
@@ -221,75 +285,85 @@ export const HeroSection = memo(({ soundEnabled }) => {
                         </div>
                     </div>
 
-                    {/* KANAN (DESKTOP) / BAWAH (HP): AVATAR DENGAN RETICLE HUD DAN TIGA LAPISAN TEKNIS */}
+                    {/* KANAN (DESKTOP) / BAWAH (HP): AVATAR DENGAN RETICLE HUD DAN ENAM LAPISAN KONSENTRIS */}
                     <div className="hero-avatar-col">
                         <div 
                             ref={reticleRef}
-                            className="hero-reticle-system"
+                            className="reticle-stage"
                             style={{
                                 transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0)`
                             }}
                         >
-                            {/* LAPISAN 2: JALUR SIRKUIT (HP: 2 JALUR, DESKTOP: 4 JALUR) */}
-                            <ReticleTraces isReady={entranceStage.traces} isDesktop={isDesktop} />
-
-                            {/* BINGKAI 3 (TERLUAR): 1PX GARIS, BERPUTAR CW DENGAN TITIK DATA SATELIT */}
-                            <div className="hud-frame hud-frame-outer" aria-hidden="true">
-                                <span className="hud-corner tl" />
-                                <span className="hud-corner tr" />
-                                <span className="hud-corner bl" />
-                                <span className="hud-corner br" />
-                                <span className="hud-axis-tick tick-n" />
-                                <span className="hud-axis-tick tick-s" />
-                                <span className="hud-axis-tick tick-e" />
-                                <span className="hud-axis-tick tick-w" />
-                                <div className="hud-data-point" />
+                            {/* LAPISAN 1: JALUR SIRKUIT PCB (HP: 2 JALUR, DESKTOP: 4 JALUR) */}
+                            <div className="reticle-concentric-layer traces-layer">
+                                <ReticleTraces isReady={entranceStage.traces} isDesktop={isDesktop} />
                             </div>
 
-                            {/* LAPISAN 1: CINCIN TEKS STACK (DI ANTARA BINGKAI TENGAH DAN LUAR, TAMPIL DI SEMUA UKURAN) */}
-                            <div className={`hud-stack-ring-wrapper ${entranceStage.stackRing ? 'ready' : ''}`}>
-                                <ReticleStackRing />
-                            </div>
-
-                            {/* BINGKAI 2 (TENGAH): 1.5PX GARIS PUTUS-PUTUS BLUE-5, BERPUTAR CCW */}
-                            <div className="hud-frame hud-frame-mid" aria-hidden="true">
-                                <span className="hud-corner tl" />
-                                <span className="hud-corner tr" />
-                                <span className="hud-corner bl" />
-                                <span className="hud-corner br" />
-                            </div>
-
-                            {/* BINGKAI 1 (TERDALAM): 1.5PX GARIS BLUE-4, BERPUTAR CW */}
-                            <div className="hud-frame hud-frame-inner" aria-hidden="true">
-                                <span className="hud-corner tl" />
-                                <span className="hud-corner tr" />
-                                <span className="hud-corner bl" />
-                                <span className="hud-corner br" />
-                            </div>
-
-                            {/* AVATAR INTI (BERADA TEPAT DI PUSAT SAMA) DENGAN CORNER BRACKET PERJELAS */}
-                            <div ref={avatarCoreRef} className="hero-avatar-core">
-                                <span className="avatar-corner-bracket tl" />
-                                <span className="avatar-corner-bracket tr" />
-                                <span className="avatar-corner-bracket bl" />
-                                <span className="avatar-corner-bracket br" />
-
-                                <div className="hero-avatar-inner">
-                                    <img 
-                                        src={settings.profile.avatar} 
-                                        alt={settings.profile.name} 
-                                        className="hero-avatar-img"
-                                        loading="eager"
-                                        decoding="async"
-                                    />
-                                </div>
-
-                                <div className="avatar-footer-tag">
-                                    <span>{settings.profile.handle}</span>
+                            {/* LAPISAN 2: BINGKAI 3 (TERLUAR): 1PX GARIS, BERPUTAR CW DENGAN TITIK DATA SATELIT */}
+                            <div className="reticle-concentric-layer frame-outer-layer">
+                                <div ref={frameOuterRef} className="hud-frame hud-frame-outer" aria-hidden="true">
+                                    <span className="hud-corner tl" />
+                                    <span className="hud-corner tr" />
+                                    <span className="hud-corner bl" />
+                                    <span className="hud-corner br" />
+                                    <span className="hud-axis-tick tick-n" />
+                                    <span className="hud-axis-tick tick-s" />
+                                    <span className="hud-axis-tick tick-e" />
+                                    <span className="hud-axis-tick tick-w" />
+                                    <div className="hud-data-point" />
                                 </div>
                             </div>
 
-                            {/* LAPISAN 3: TELEMETRI HUD (HP: 2 LABEL, DESKTOP: 4 LABEL, LAYER STATIS) */}
+                            {/* LAPISAN 3: CINCIN TEKS STACK (TEGAK LURUS, TEKS BERJALAN SEARAH JARUM JAM) */}
+                            <div className={`reticle-concentric-layer stack-ring-layer ${entranceStage.stackRing ? 'ready' : ''}`}>
+                                <ReticleStackRing ref={stackRingRef} isHeroPaused={isHeroPaused} />
+                            </div>
+
+                            {/* LAPISAN 4: BINGKAI 2 (TENGAH): 1.5PX GARIS PUTUS-PUTUS BLUE-5, BERPUTAR CCW */}
+                            <div className="reticle-concentric-layer frame-mid-layer">
+                                <div ref={frameMidRef} className="hud-frame hud-frame-mid" aria-hidden="true">
+                                    <span className="hud-corner tl" />
+                                    <span className="hud-corner tr" />
+                                    <span className="hud-corner bl" />
+                                    <span className="hud-corner br" />
+                                </div>
+                            </div>
+
+                            {/* LAPISAN 5: BINGKAI 1 (TERDALAM): 1.5PX GARIS BLUE-4, BERPUTAR CW */}
+                            <div className="reticle-concentric-layer frame-inner-layer">
+                                <div ref={frameInnerRef} className="hud-frame hud-frame-inner" aria-hidden="true">
+                                    <span className="hud-corner tl" />
+                                    <span className="hud-corner tr" />
+                                    <span className="hud-corner bl" />
+                                    <span className="hud-corner br" />
+                                </div>
+                            </div>
+
+                            {/* LAPISAN 6: AVATAR INTI (BERADA TEPAT DI PUSAT SAMA) DENGAN CORNER BRACKET PERJELAS */}
+                            <div className="reticle-concentric-layer avatar-layer">
+                                <div ref={avatarCoreRef} className="hero-avatar-core">
+                                    <span className="avatar-corner-bracket tl" />
+                                    <span className="avatar-corner-bracket tr" />
+                                    <span className="avatar-corner-bracket bl" />
+                                    <span className="avatar-corner-bracket br" />
+
+                                    <div className="hero-avatar-inner">
+                                        <img 
+                                            src={settings.profile.avatar} 
+                                            alt={settings.profile.name} 
+                                            className="hero-avatar-img"
+                                            loading="eager"
+                                            decoding="async"
+                                        />
+                                    </div>
+
+                                    <div className="avatar-footer-tag">
+                                        <span>{settings.profile.handle}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* LAPISAN 7: TELEMETRI HUD (4 SUDUT MENEMPEL PADA RETICLE STAGE, JARAK 8PX) */}
                             <div className={`hud-telemetry-wrapper ${entranceStage.telemetry ? 'ready' : ''}`}>
                                 <ReticleTelemetry 
                                     reticleRef={reticleRef} 
@@ -299,13 +373,13 @@ export const HeroSection = memo(({ soundEnabled }) => {
                                 />
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* INDIKATOR SCROLL KE BAWAH */}
-                <div className="hero-scroll-hint" onClick={() => scrollTo('stack')}>
-                    <span className="scroll-hint-text font-mono text-xs">Scroll</span>
-                    <ChevronDown size={14} strokeWidth={1.5} className="scroll-hint-icon" />
+                        {/* INDIKATOR SCROLL TEPAT DI BAWAH RETICLE (JARAK 16PX) */}
+                        <div className="hero-scroll-hint" onClick={() => scrollTo('ringkasan')}>
+                            <span className="scroll-hint-text font-mono text-xs">Scroll</span>
+                            <ChevronDown size={14} strokeWidth={1.5} className="scroll-hint-icon" />
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

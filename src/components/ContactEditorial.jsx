@@ -116,8 +116,8 @@ const EditorialLinkRow = memo(({ link, index, soundEnabled, onShowToast }) => {
     );
 });
 
-export const ContactEditorial = memo(({ soundEnabled, onShowToast }) => {
-    const [sectionRef, isRevealed] = useReveal({ threshold: 0.08 });
+export const ContactEditorial = memo(({ soundEnabled, onShowToast, sectionNumber = "05" }) => {
+    const [sectionRef, isRevealed] = useReveal();
     const links = settings.links || [];
 
     return (
@@ -125,20 +125,20 @@ export const ContactEditorial = memo(({ soundEnabled, onShowToast }) => {
             id="kontak" 
             ref={sectionRef}
             className={`editorial-section ${isRevealed ? 'revealed' : ''}`}
-            aria-label="Jaringan dan Komunikasi Resmi"
+            aria-label="Jaringan dan komunikasi resmi"
         >
             <div className="section-container">
                 {/* HEADER SECTION EDITORIAL */}
                 <header className="editorial-section-header">
                     <div className="editorial-kicker-row">
-                        <span className="editorial-kicker-num">05</span>
+                        <span className="editorial-kicker-num">{sectionNumber}</span>
                         <span className="editorial-kicker-slash">/</span>
-                        <h2 className="editorial-kicker-title">JARINGAN & KOMUNIKASI RESMI</h2>
+                        <h2 className="editorial-kicker-title">Jaringan dan komunikasi resmi</h2>
                     </div>
 
                     <div className="editorial-header-actions">
                         <span className="text-xs font-mono text-[var(--blue-3)]">
-                            {links.length} TAUTAN TERVERIFIKASI
+                            {links.length} tautan terverifikasi
                         </span>
                     </div>
                 </header>

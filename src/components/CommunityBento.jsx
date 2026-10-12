@@ -13,6 +13,7 @@ import { settings } from '../settings.js';
 import WhatsAppChannelCard from './WhatsAppChannelCard.jsx';
 import { playClickHaptic } from '../utils/audioHaptic.js';
 import { subscribeWibClock } from '../utils/timeSource.js';
+import { useReveal } from '../hooks/useReveal.js';
 
 const WAVE_BARS = [0.4, 0.9, 0.6, 1.0, 0.5, 0.8];
 
@@ -140,22 +141,30 @@ export const CommunityBento = memo(({
     onTogglePlay, 
     soundEnabled, 
     onShowToast, 
-    onOpenPlayerSheet 
+    onOpenPlayerSheet,
+    sectionNumber = "04"
 }) => {
+    const [sectionRef, isRevealed] = useReveal();
+
     return (
-        <section id="komunitas" className="editorial-section" aria-label="Komunitas dan Status">
+        <section 
+            id="komunitas" 
+            ref={sectionRef}
+            className={`editorial-section ${isRevealed ? 'revealed' : ''}`} 
+            aria-label="Komunitas"
+        >
             <div className="section-container">
                 {/* HEADER SECTION EDITORIAL */}
                 <header className="editorial-section-header">
                     <div className="editorial-kicker-row">
-                        <span className="editorial-kicker-num">04</span>
-                        <span className="editorial-kicker-slash">/</span>
-                        <h2 className="editorial-kicker-title">KOMUNITAS & KONSOL REALTIME</h2>
+                        <span className="editorial-kicker-num">{sectionNumber}</span>
+                        <span className="editorial-kicker-slash" aria-hidden="true">/</span>
+                        <h2 className="editorial-kicker-title">Komunitas</h2>
                     </div>
 
                     <div className="editorial-header-actions">
                         <span className="text-xs font-mono text-[var(--blue-3)]">
-                            SALURAN, DISCORD & SINKRONISASI
+                            Saluran, Discord dan sinkronisasi
                         </span>
                     </div>
                 </header>

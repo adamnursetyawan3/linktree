@@ -114,9 +114,8 @@ export const ReticleTelemetry = memo(({ reticleRef, avatarRef, heroContainerRef,
             for (const entry of entries) {
                 const { width, height } = entry.contentRect;
                 if (entry.target === reticleRef?.current && frameDimRef.current) {
-                    const w = Math.round(width) || (isDesktop ? 316 : 280);
-                    const h = Math.round(height) || (isDesktop ? 316 : 280);
-                    frameDimRef.current.textContent = `FRAME ${w}x${h}`;
+                    const w = Math.round(width / 1.42) || (isDesktop ? 316 : 280);
+                    frameDimRef.current.textContent = `FRAME ${w}x${w}`;
                 } else if (entry.target === avatarRef?.current && avtDimRef.current) {
                     const w = Math.round(width) || 180;
                     const h = Math.round(height) || 180;

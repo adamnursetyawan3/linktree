@@ -86,9 +86,10 @@ export const ProjectGrid = memo(({
     soundEnabled, 
     onShowToast, 
     selectedProjectIndex, 
-    onSelectProject 
+    onSelectProject,
+    sectionNumber = "03"
 }) => {
-    const [sectionRef, isRevealed] = useReveal({ threshold: 0.08 });
+    const [sectionRef, isRevealed] = useReveal();
     const projects = settings.projects || [];
 
     const handleOpenModal = (index) => {
@@ -116,20 +117,20 @@ export const ProjectGrid = memo(({
             id="project" 
             ref={sectionRef} 
             className={`editorial-section ${isRevealed ? 'revealed' : ''}`}
-            aria-label="Katalog Proyek Terkurasi"
+            aria-label="Katalog proyek terkurasi"
         >
             <div className="section-container">
                 {/* HEADER SECTION EDITORIAL */}
                 <header className="editorial-section-header">
                     <div className="editorial-kicker-row">
-                        <span className="editorial-kicker-num">03</span>
+                        <span className="editorial-kicker-num">{sectionNumber}</span>
                         <span className="editorial-kicker-slash">/</span>
-                        <h2 className="editorial-kicker-title">PROYEK & KARYA REKAYASA</h2>
+                        <h2 className="editorial-kicker-title">Proyek dan karya rekayasa</h2>
                     </div>
 
                     <div className="editorial-header-actions">
                         <span className="text-xs font-mono text-[var(--blue-3)]">
-                            {projects.length} REPOSITORY TERVERIFIKASI
+                            {projects.length} repositori terverifikasi
                         </span>
                     </div>
                 </header>
