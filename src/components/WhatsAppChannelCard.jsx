@@ -1,15 +1,16 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useRef } from 'react';
 import { 
     Users, 
     Copy, 
     Check, 
     CheckCircle2, 
-    MessageCircle,
-    Radio
+    Radio,
+    Info
 } from 'lucide-react';
 import { playClickHaptic } from '../utils/audioHaptic.js';
+import AnimatedNumber from './AnimatedNumber.jsx';
 
-// HELPER FETCH CEPAT DENGAN BATAS TIMEOUT AGAR TIDAK PERNAH MENGGANTUNG JARINGAN
+// HELPER FETCH CEPAT DENGAN TIMEOUT
 const fetchWithTimeout = async (url, timeoutMs = 4500) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -23,16 +24,24 @@ const fetchWithTimeout = async (url, timeoutMs = 4500) => {
     }
 };
 
+const TAB_INDEX_MAP = {
+    channel: 0,
+    group: 1,
+    discord: 2
+};
+
 const WhatsAppChannelCard = memo(({ 
     channelUrl = "https://whatsapp.com/channel/0029VbCz8aUHAdNOPaBL1P3j", 
     groupUrl = "https://chat.whatsapp.com/IFVpqBdZIOGHvdcT1ngaiD",
     discordUrl = "https://discord.gg/aDmrbdKanG",
-    soundEnabled = true
+    soundEnabled = true,
+    onShowToast
 }) => {
-    // TAB AKTIF: CHANNEL, GROUP, ATAU DISCORD
     const [activeTab, setActiveTab] = useState('channel');
+    const [showStatDetail, setShowStatDetail] = useState(false);
+    const cardRef = useRef(null);
 
-    // DATA DEFAULT SALURAN WHATSAPP (DANS HUB)
+    // DATA DEFAULT SALURAN WHATSAPP
     const [channelData, setChannelData] = useState({
         name: "DANS HUB",
         description: "Selamat datang di saluran saya, saluran ini di fokuskan untuk sharing project gabut gw, belajar bersama tentang code dan pembuatan web static.",
@@ -54,7 +63,7 @@ const WhatsAppChannelCard = memo(({
         verified: false
     });
 
-    // DATA DEFAULT SERVER DISCORD (LANGSUNG TAMPIL DENGAN STATISTIK REALTIME)
+    // DATA DEFAULT SERVER DISCORD
     const [discordData, setDiscordData] = useState({
         name: "DANS HUB",
         description: "Komunitas Discord DANS HUB resmi untuk voice chat, diskusi coding, mabar, dan sharing project.",
@@ -77,7 +86,7 @@ const WhatsAppChannelCard = memo(({
         ? channelData 
         : (activeTab === 'group' ? groupData : discordData);
 
-    // PENGAMBILAN DATA WHATSAPP DENGAN SESSION CACHE AGAR INSTAN
+    // PENGAMBILAN DATA DENGAN SESSION STORAGE CACHE
     const fetchWhatsAppResource = async (url, type) => {
         const cacheKey = `wa_cache_${type}`;
         try {
@@ -112,7 +121,6 @@ const WhatsAppChannelCard = memo(({
         } catch (e) {}
     };
 
-    // PENGAMBILAN DATA LANGSUNG DARI DISCORD DENGAN SESSION CACHE
     const fetchDiscordLiveStats = async () => {
         const inviteCode = "aDmrbdKanG";
         const cacheKey = `dc_cache_${inviteCode}`;
@@ -128,7 +136,6 @@ const WhatsAppChannelCard = memo(({
             }
         } catch (e) {}
         
-        // 1. PERCOBAAN LANGSUNG KE DISCORD PUBLIC API (FULL CORS SUPPORT)
         try {
             const directRes = await fetchWithTimeout(`https://discord.com/api/v10/invites/${inviteCode}?with_counts=true`);
             if (directRes.ok) {
@@ -156,7 +163,6 @@ const WhatsAppChannelCard = memo(({
             }
         } catch (err) {}
 
-        // 2. FALLBACK PROXY BACKEND JIKA BROWSER MEMBLOKIR DIRECT REQUEST
         try {
             const proxyRes = await fetchWithTimeout(`/api/discord-info?code=${inviteCode}`);
             if (proxyRes.ok) {
@@ -178,7 +184,6 @@ const WhatsAppChannelCard = memo(({
         } catch (e) {}
     };
 
-    // SINKRONISASI DATA WHATSAPP & DISCORD DI LATAR BELAKANG SAAT IDLE (TANPA LAG)
     useEffect(() => {
         setImgError(false);
         const runSync = () => {
@@ -198,16 +203,27 @@ const WhatsAppChannelCard = memo(({
         }
     }, [channelUrl, groupUrl, discordUrl]);
 
+    const handlePointerMove = (e) => {
+        if (!cardRef.current) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        cardRef.current.style.setProperty('--mouse-x', `${x}px`);
+        cardRef.current.style.setProperty('--mouse-y', `${y}px`);
+    };
+
     const handleCopyLink = async () => {
         playClickHaptic(soundEnabled);
         try {
             await navigator.clipboard.writeText(currentUrl);
             setCopied(true);
+            onShowToast?.("Tautan komunitas berhasil disalin");
             setTimeout(() => setCopied(false), 2000);
-        } catch (e) {}
+        } catch (e) {
+            onShowToast?.("Gagal menyalin tautan");
+        }
     };
 
-    // LOGIKA PENENTUAN SUMBER GAMBAR AVATAR
     const getAvatarSrc = () => {
         if (activeTab === 'discord') {
             return discordData.icon || '/avatar.jpg';
@@ -218,152 +234,234 @@ const WhatsAppChannelCard = memo(({
     };
 
     const avatarSrc = getAvatarSrc();
+    const tabIndex = TAB_INDEX_MAP[activeTab] || 0;
 
     return (
-        <div className="wa-channel-card" id="wa-community-widget">
-            {/* SWITCHER TAB ATAS: SALURAN, GRUP WHATSAPP, DAN DISCORD */}
-            <div className="wa-card-top-controls">
-                <div className="wa-tabs-switcher">
+        <div 
+            ref={cardRef} 
+            className="community-panel-card card-interactive-glow" 
+            id="wa-community-widget"
+            onPointerMove={handlePointerMove}
+        >
+            {/* 1. SEGMENTED TABS DENGAN SLIDING PILL INDICATOR */}
+            <div className="community-tabs-header">
+                <div className="segmented-tabs-wrapper" role="tablist">
+                    {/* SLIDING PILL ELEMENT */}
+                    <div 
+                        className="sliding-tab-pill" 
+                        style={{
+                            left: `${(tabIndex * 33.333)}%`,
+                            width: '33.333%'
+                        }}
+                        aria-hidden="true"
+                    />
+
                     <button 
-                        className={`wa-tab-btn ${activeTab === 'channel' ? 'active' : ''}`}
+                        role="tab"
+                        aria-selected={activeTab === 'channel'}
+                        className={`segmented-tab-btn ${activeTab === 'channel' ? 'active' : ''}`}
                         onClick={() => {
                             playClickHaptic(soundEnabled);
                             setImgError(false);
                             setActiveTab('channel');
+                            setShowStatDetail(false);
                         }}
                     >
-                        <Radio size={12} />
+                        <Radio size={13} strokeWidth={1.5} />
                         <span>Saluran</span>
                     </button>
                     <button 
-                        className={`wa-tab-btn ${activeTab === 'group' ? 'active' : ''}`}
+                        role="tab"
+                        aria-selected={activeTab === 'group'}
+                        className={`segmented-tab-btn ${activeTab === 'group' ? 'active' : ''}`}
                         onClick={() => {
                             playClickHaptic(soundEnabled);
                             setImgError(false);
                             setActiveTab('group');
+                            setShowStatDetail(false);
                         }}
                     >
-                        <Users size={12} />
+                        <Users size={13} strokeWidth={1.5} />
                         <span>Grup WA</span>
                     </button>
                     <button 
-                        className={`wa-tab-btn ${activeTab === 'discord' ? 'active' : ''}`}
+                        role="tab"
+                        aria-selected={activeTab === 'discord'}
+                        className={`segmented-tab-btn ${activeTab === 'discord' ? 'active' : ''}`}
                         onClick={() => {
                             playClickHaptic(soundEnabled);
                             setImgError(false);
                             setActiveTab('discord');
+                            setShowStatDetail(false);
                         }}
                     >
-                        <i className="fa-brands fa-discord text-[12px]"></i>
+                        <i className="fa-brands fa-discord text-[#5865F2] text-[13px]"></i>
                         <span>Discord</span>
                     </button>
                 </div>
-
-                <div className="wa-top-tag">
-                    <span>Komunitas</span>
-                </div>
             </div>
 
-            <div key={activeTab} className="wa-tab-panel">
-                <div className="wa-channel-content">
-                    {/* AVATAR / ICON KOMUNITAS */}
-                    <div className="wa-avatar-container">
-                        {avatarSrc && !imgError ? (
-                            <img 
-                                src={avatarSrc} 
-                                alt={activeData?.name || "Community"} 
-                                className="wa-avatar-img"
-                                loading="lazy"
-                                decoding="async"
-                                onError={() => setImgError(true)}
-                            />
-                        ) : (
-                            <div className="wa-avatar-fallback">
-                                {activeTab === 'discord' ? (
-                                    <i className="fa-brands fa-discord text-[#5865F2] text-2xl"></i>
-                                ) : (
-                                    <MessageCircle size={24} className="text-[#00B8DB]" />
+            {/* 2. ISI DUA BAGIAN DENGAN TRANSISI HALUS (CROSSFADE + GESER TIPIS) */}
+            <div key={activeTab} className="community-body-split community-tab-content-fade" role="tabpanel">
+                {/* KIRI: AVATAR, NAMA, DESKRIPSI */}
+                <div className="community-left-col">
+                    <div className="community-identity-row">
+                        <div className="community-avatar-box">
+                            {avatarSrc && !imgError ? (
+                                <img 
+                                    src={avatarSrc} 
+                                    alt={activeData?.name || "Community"} 
+                                    className="community-avatar-img"
+                                    loading="lazy"
+                                    decoding="async"
+                                    onError={() => setImgError(true)}
+                                />
+                            ) : (
+                                <div className="community-avatar-fallback">
+                                    {activeTab === 'discord' ? (
+                                        <i className="fa-brands fa-discord text-[#5865F2] text-xl"></i>
+                                    ) : (
+                                        <i className="fa-brands fa-whatsapp text-[var(--blue-4)] text-xl"></i>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="community-name-meta">
+                            <div className="community-title-line">
+                                <h3 className="community-title-text">
+                                    {activeData?.name || (activeTab === 'channel' ? 'Saluran WhatsApp' : (activeTab === 'group' ? 'Grup WhatsApp' : 'Server Discord'))}
+                                </h3>
+                                {activeData?.verified && (
+                                    <span className="community-verified-icon" title="Verified">
+                                        <CheckCircle2 size={13} strokeWidth={1.5} />
+                                    </span>
                                 )}
+                            </div>
+                            <span className="community-type-badge">
+                                {activeTab === 'discord' ? 'Discord Server' : (activeTab === 'group' ? 'Grup WhatsApp' : 'Saluran WhatsApp')}
+                            </span>
+                        </div>
+                    </div>
+
+                    <p className="community-desc-text">
+                        {activeData?.description || (activeTab === 'channel' 
+                            ? 'Saluran informasi seputar teknologi, web development, dan update terbaru.' 
+                            : (activeTab === 'group' 
+                                ? 'Grup WhatsApp resmi untuk diskusi, sharing, dan komunikasi bersama.' 
+                                : 'Komunitas Discord resmi DANS HUB untuk voice chat, diskusi coding, mabar, dan sharing project.'))}
+                    </p>
+                </div>
+
+                {/* KANAN: STATISTIK INTERAKTIF (KLIK UNTUK MEMBALIK / MELIHAT DETAIL LENGKAP TANPA MENGARANG DATA) */}
+                <div className="community-right-col">
+                    <div 
+                        className={`stat-flip-wrapper ${showStatDetail ? 'flipped' : ''}`}
+                        onClick={() => {
+                            playClickHaptic(soundEnabled);
+                            setShowStatDetail(prev => !prev);
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        title="Klik untuk melihat rincian metrik"
+                        aria-label="Detail metrik komunitas"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                playClickHaptic(soundEnabled);
+                                setShowStatDetail(prev => !prev);
+                            }
+                        }}
+                    >
+                        {!showStatDetail ? (
+                            activeTab === 'discord' ? (
+                                <div className="stat-mono-cluster">
+                                    <div className="stat-mono-card">
+                                        <div className="stat-mono-val stat-online-val">
+                                            <span className="discord-status-dot" />
+                                            <AnimatedNumber value={discordData.online} />
+                                        </div>
+                                        <span className="stat-mono-lbl">ONLINE</span>
+                                    </div>
+                                    <div className="stat-mono-card">
+                                        <div className="stat-mono-val">
+                                            <AnimatedNumber value={discordData.members} />
+                                        </div>
+                                        <span className="stat-mono-lbl">MEMBERS</span>
+                                    </div>
+                                    <div className="stat-hint-tag">
+                                        <Info size={10} strokeWidth={1.5} />
+                                        <span>Rincian</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="stat-mono-cluster single-stat">
+                                    <div className="stat-mono-card">
+                                        <div className="stat-mono-val">
+                                            <AnimatedNumber value={activeData?.followers || (activeTab === 'channel' ? '380+' : 'Aktif')} />
+                                        </div>
+                                        <span className="stat-mono-lbl">
+                                            {activeTab === 'channel' ? 'PENGIKUT' : 'KOMUNITAS'}
+                                        </span>
+                                    </div>
+                                    <div className="stat-hint-tag">
+                                        <Info size={10} strokeWidth={1.5} />
+                                        <span>Rincian</span>
+                                    </div>
+                                </div>
+                            )
+                        ) : (
+                            <div className="stat-detail-expanded-panel">
+                                <span className="stat-detail-heading">METRIK STATUS</span>
+                                {activeTab === 'discord' ? (
+                                    <div className="stat-detail-lines">
+                                        <p><strong>{discordData.online}</strong> anggota sedang online</p>
+                                        <p><strong>{discordData.members}</strong> total anggota server</p>
+                                    </div>
+                                ) : (
+                                    <div className="stat-detail-lines">
+                                        <p><strong>{activeData?.followers || '380+ Pengikut'}</strong></p>
+                                        <p>Status: {activeTab === 'channel' ? 'Saluran Terbuka' : 'Grup Komunitas'}</p>
+                                    </div>
+                                )}
+                                <span className="stat-detail-close-hint">Ketuk untuk kembali</span>
                             </div>
                         )}
                     </div>
-
-                    {/* KOLOM INFORMASI KOMUNITAS */}
-                    <div className="wa-info-col">
-                        <div className="wa-title-row">
-                            <h3 className="wa-channel-name">
-                                {activeData?.name || (activeTab === 'channel' ? 'Saluran WhatsApp' : (activeTab === 'group' ? 'Grup WhatsApp' : 'Server Discord'))}
-                            </h3>
-                            {activeData?.verified && (
-                                <span className="wa-verified-badge" title="Verified">
-                                    <CheckCircle2 size={15} />
-                                </span>
-                            )}
-                        </div>
-
-                        {/* META ROW DENGAN LIVE STALK STATS */}
-                        <div className="wa-meta-row">
-                            {activeTab === 'discord' ? (
-                                <>
-                                    {/* INDIKATOR STATUS ONLINE DENGAN TITIK HIJAU PULSING */}
-                                    <span className="wa-meta-pill discord-online-pill" title="Pengguna Online Saat Ini">
-                                        <span className="discord-pulse-dot" />
-                                        <strong>{discordData.online} Online</strong>
-                                    </span>
-
-                                    {/* JUMLAH ANGGOTA SERVER */}
-                                    <span className="wa-meta-pill discord-members-pill" title="Total Anggota Server">
-                                        <Users size={12} />
-                                        <strong>{discordData.members} Member</strong>
-                                    </span>
-
-                                    <span className="wa-meta-pill discord-tag-pill">
-                                        <strong>Server</strong>
-                                    </span>
-                                </>
-                            ) : (
-                                <span className="wa-meta-pill wa-followers-pill">
-                                    <Users size={12} />
-                                    <strong>{activeData?.followers || (activeTab === 'channel' ? 'Saluran Resmi' : 'Komunitas Aktif')}</strong>
-                                </span>
-                            )}
-                        </div>
-
-                        <p className="wa-description-text">
-                            {activeData?.description || (activeTab === 'channel' 
-                                ? 'Saluran informasi seputar teknologi, web development, dan update terbaru.' 
-                                : (activeTab === 'group' 
-                                    ? 'Grup WhatsApp resmi untuk diskusi, sharing, dan komunikasi bersama.' 
-                                    : 'Komunitas Discord resmi DANS HUB untuk voice chat, diskusi coding, mabar, dan sharing project.'))}
-                        </p>
-                    </div>
                 </div>
+            </div>
 
-                {/* TOMBOL AKSI KOMUNITAS */}
-                <div className="wa-actions-row">
-                    <a 
-                        href={currentUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className={`wa-join-btn ${activeTab === 'discord' ? 'discord-join-btn' : ''}`}
-                        onClick={() => playClickHaptic(soundEnabled)}
-                    >
-                        <i className={`${activeTab === 'discord' ? 'fa-brands fa-discord' : 'fa-brands fa-whatsapp'} wa-btn-icon`}></i>
-                        <span>
-                            {activeTab === 'channel' ? 'Buka Saluran' : (activeTab === 'group' ? 'Gabung Grup' : 'Gabung Discord')}
-                        </span>
-                    </a>
+            {/* 3. TOMBOL AKSI: TOMBOL BUKA LEBAR PENUH + TOMBOL SALIN KOTAK */}
+            <div className="community-actions-bar">
+                <a 
+                    href={currentUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="primary-action-btn"
+                    onClick={() => playClickHaptic(soundEnabled)}
+                >
+                    {activeTab === 'discord' ? (
+                        <i className="fa-brands fa-discord btn-brand-icon text-[#5865F2]"></i>
+                    ) : (
+                        <i className="fa-brands fa-whatsapp btn-brand-icon"></i>
+                    )}
+                    <span>
+                        {activeTab === 'channel' ? 'Buka Saluran' : (activeTab === 'group' ? 'Gabung Grup' : 'Gabung Discord')}
+                    </span>
+                </a>
 
-                    <button 
-                        className="wa-copy-btn" 
-                        onClick={handleCopyLink}
-                        title="Salin Link"
-                        aria-label="Salin tautan komunitas"
-                    >
-                        {copied ? <Check size={14} className="text-[#34D399]" /> : <Copy size={14} />}
-                        <span>{copied ? 'Tersalin' : 'Salin'}</span>
-                    </button>
-                </div>
+                <button 
+                    className="square-copy-btn" 
+                    onClick={handleCopyLink}
+                    title="Salin Link"
+                    aria-label="Salin tautan komunitas"
+                >
+                    {copied ? (
+                        <Check size={15} strokeWidth={1.5} className="text-[var(--status-online)]" />
+                    ) : (
+                        <Copy size={15} strokeWidth={1.5} />
+                    )}
+                </button>
             </div>
         </div>
     );

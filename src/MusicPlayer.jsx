@@ -1,13 +1,12 @@
-import React, { useState, memo } from 'react';
+import React, { memo } from 'react';
 import { 
     Play, 
     Pause, 
-    Music2,
-    X
+    Music2, 
+    Maximize2 
 } from 'lucide-react';
 import { settings } from './settings.js';
 
-// HAPTIC RINGAN PERANGKAT MOBILE
 const triggerHaptic = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(12);
@@ -16,146 +15,97 @@ const triggerHaptic = () => {
 
 const WAVE_BARS = [0.35, 0.80, 0.55, 0.95, 0.45];
 
-const MusicPlayer = memo(({ 
+export const MusicPlayer = memo(({ 
     isPlaying = false, 
     onTogglePlay, 
-    needsInteraction = false 
+    needsInteraction = false,
+    onOpenSheet
 }) => {
-    const [coverError, setCoverError] = useState(false);
-    const [showCoverModal, setShowCoverModal] = useState(false);
-
     const handlePlayClick = (e) => {
         e?.stopPropagation?.();
         triggerHaptic();
         onTogglePlay?.();
     };
 
-    // TAMPILKAN PRATINJAU COVER LENGKAP KETIKA COVER DIKLIK (TANPA MENGGANGGU PLAY/PAUSE)
-    const handleCoverClick = (e) => {
-        e?.stopPropagation?.();
+    const handleBarClick = () => {
         triggerHaptic();
-        setShowCoverModal(true);
+        onOpenSheet?.();
     };
 
     return (
-        <>
-            {/* DOCK KAPSUL CYBER INDUSTRIAL */}
-            <div 
-                className="ios-pill-dock"
-                id="ios-pill-dock"
-            >
-                <div 
-                    className="ios-island-capsule"
+        <div 
+            className="bottom-player-bar" 
+            id="bottom-player-bar"
+            onClick={handleBarClick}
+            role="button"
+            tabIndex={0}
+            title="Klik untuk membuka panel pemutar audio penuh"
+            aria-label="Panel pemutar musik"
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBarClick();
+                }
+            }}
+        >
+            <div className="player-bar-container">
+                {/* KIRI: COVER ALBUM */}
+                <div className="player-cover-box">
+                    <img 
+                        src={settings.music.cover} 
+                        alt={settings.music.title} 
+                        className={`player-cover-img ${isPlaying ? 'playing' : ''}`}
+                        loading="lazy"
+                        decoding="async"
+                    />
+                </div>
+
+                {/* TENGAH: JUDUL DAN ARTIS */}
+                <div className="player-info-col">
+                    <span className="player-track-title">
+                        {settings.music.title}
+                    </span>
+                    <span className="player-artist-name">
+                        {isPlaying 
+                            ? settings.music.artist 
+                            : (needsInteraction ? "ketuk untuk memutar musik" : `${settings.music.artist} • dijeda`)}
+                    </span>
+                </div>
+
+                {/* VISUALISASI WAVE BARS ANIMATIF */}
+                <div className="player-wave-group" aria-hidden="true">
+                    {WAVE_BARS.map((barScale, idx) => (
+                        <span 
+                            key={idx} 
+                            className={`player-wave-stick ${isPlaying ? 'animated' : ''}`}
+                            style={{
+                                transform: `scaleY(${isPlaying ? barScale : 0.22})`,
+                                animationDelay: `${idx * 0.12}s`
+                            }}
+                        />
+                    ))}
+                </div>
+
+                {/* EXPAND ICON HINT */}
+                <div className="player-expand-hint" aria-hidden="true">
+                    <Maximize2 size={13} strokeWidth={1.5} className="text-[var(--blue-4)]" />
+                </div>
+
+                {/* KANAN: TOMBOL PLAY/PAUSE UTAMA */}
+                <button 
+                    className="player-action-toggle"
                     onClick={handlePlayClick}
-                    id="ios-island-capsule"
-                    role="button"
-                    tabIndex={0}
-                    aria-label={isPlaying ? "Jeda Audio" : "Putar Audio"}
+                    id="player-action-toggle"
+                    aria-label={isPlaying ? "Jeda audio" : "Putar audio"}
                 >
-                    {/* KIRI: SAMPUL ALBUM MUSIK */}
-                    <div 
-                        className="ios-capsule-art"
-                        onClick={handleCoverClick}
-                        title="Klik untuk melihat sampul album penuh"
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Lihat sampul album penuh"
-                    >
-                        {!coverError ? (
-                            <img 
-                                src={settings.music.cover} 
-                                alt={settings.music.title} 
-                                className={`ios-capsule-cover ${isPlaying ? 'playing' : ''}`}
-                                loading="lazy"
-                                decoding="async"
-                                onError={() => setCoverError(true)}
-                            />
-                        ) : (
-                            <div className="ios-capsule-fallback">
-                                <Music2 size={16} className="text-[#00B8DB]" />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* TENGAH: JUDUL LAGU & NAMA ARTIS */}
-                    <div className="ios-capsule-meta">
-                        <span className="ios-capsule-title">
-                            {settings.music.title}
-                        </span>
-                        <span className="ios-capsule-artist">
-                            {isPlaying 
-                                ? settings.music.artist 
-                                : (needsInteraction ? "ketuk untuk memutar musik" : `${settings.music.artist} • dijeda`)}
-                        </span>
-                    </div>
-
-                    {/* KANAN: VISUALISASI GELOMBANG SUARA ANIMATIF (GPU ACCELERATED) */}
-                    <div className="ios-capsule-soundwave" aria-hidden="true">
-                        {WAVE_BARS.map((barScale, idx) => (
-                            <span 
-                                key={idx} 
-                                className={`ios-wave-bar ${isPlaying ? 'animated' : ''}`}
-                                style={{
-                                    transform: `scaleY(${isPlaying ? barScale : 0.24})`,
-                                    animationDelay: `${idx * 0.12}s`
-                                }}
-                            />
-                        ))}
-                    </div>
-
-                    {/* TOMBOL PINTAS PUTAR / JEDA */}
-                    <button 
-                        className="ios-capsule-play-btn"
-                        onClick={handlePlayClick}
-                        id="ios-capsule-play-btn"
-                        aria-label={isPlaying ? "Jeda audio" : "Putar audio"}
-                    >
-                        {isPlaying ? (
-                            <Pause size={14} className="fill-current" />
-                        ) : (
-                            <Play size={14} className="fill-current" />
-                        )}
-                    </button>
-                </div>
+                    {isPlaying ? (
+                        <Pause size={14} strokeWidth={1.5} />
+                    ) : (
+                        <Play size={14} strokeWidth={1.5} />
+                    )}
+                </button>
             </div>
-
-            {/* MODAL PRATINJAU COVER PENUH KETIKA COVER DIKLIK */}
-            {showCoverModal && (
-                <div 
-                    className="cover-lightbox-backdrop"
-                    onClick={() => setShowCoverModal(false)}
-                >
-                    <div 
-                        className="cover-lightbox-card"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="cover-lightbox-header">
-                            <div className="cover-lightbox-meta">
-                                <span className="cover-lightbox-title">{settings.music.title}</span>
-                                <span className="cover-lightbox-artist">{settings.music.artist}</span>
-                            </div>
-                            <button 
-                                className="cover-lightbox-close"
-                                onClick={() => setShowCoverModal(false)}
-                                title="Tutup Pratinjau Sampul"
-                                aria-label="Tutup pratinjau sampul"
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-
-                        <div className="cover-lightbox-img-box">
-                            <img 
-                                src={settings.music.cover} 
-                                alt={settings.music.title} 
-                                className="cover-lightbox-img"
-                                decoding="async"
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
+        </div>
     );
 });
 

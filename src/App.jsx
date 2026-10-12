@@ -1,58 +1,65 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { 
-    Share2, 
-    Volume2, 
-    VolumeX, 
-    MapPin, 
-    ArrowUpRight, 
-    Clock 
-} from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { settings } from './settings.js';
-import WhatsAppChannelCard from './components/WhatsAppChannelCard.jsx';
-import SociaBuzzIcon from './components/SociaBuzzIcon.jsx';
+import Navbar from './components/Navbar.jsx';
+import HeroSection from './components/HeroSection.jsx';
+import StackMarquee from './components/StackMarquee.jsx';
+import MetricsDashboard from './components/MetricsDashboard.jsx';
+import ProjectGrid from './components/ProjectGrid.jsx';
+import CommunityBento from './components/CommunityBento.jsx';
+import ContactEditorial from './components/ContactEditorial.jsx';
+import FooterSection from './components/FooterSection.jsx';
 import MusicPlayer from './MusicPlayer.jsx';
+import NetworkCanvas from './components/NetworkCanvas.jsx';
+import CommandPalette from './components/CommandPalette.jsx';
+import PlayerSheet from './components/PlayerSheet.jsx';
+import Toast from './components/Toast.jsx';
 import { playClickHaptic } from './utils/audioHaptic.js';
 
-// KOMPONEN JAM TERISOLASI AGAR TIDAK MEMICU RE-RENDER SELURUH HALAMAN SETIAP DETIK
-const HudClock = memo(() => {
-    const [currentTime, setCurrentTime] = useState(() => {
-        return new Date().toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Jakarta'
-        });
-    });
-
-    useEffect(() => {
-        const updateClock = () => {
-            setCurrentTime(new Date().toLocaleTimeString('id-ID', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false,
-                timeZone: 'Asia/Jakarta'
-            }));
-        };
-        const timer = setInterval(updateClock, 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    return (
-        <div className="hud-clock-pill">
-            <Clock size={12} className="hud-clock-icon" />
-            <span>{currentTime} WIB</span>
-        </div>
-    );
-});
-
-const App = () => {
+export const App = () => {
     const audioRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [needsInteraction, setNeedsInteraction] = useState(true);
+    const [isPageLoaded, setIsPageLoaded] = useState(false);
 
-    // KONFIGURASI AWAL AUDIO & MEDIASESSION (TANPA AUTOPLAY / TANPA GESTURE GLOBAL)
+    // MODAL & SHEET INTERACTION STATES
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isPlayerSheetOpen, setIsPlayerSheetOpen] = useState(false);
+    const [selectedProjectIndex, setSelectedProjectIndex] = useState(null);
+    const [expandedSocialId, setExpandedSocialId] = useState(null);
+
+    // ACCESSIBLE TOAST NOTIFICATION STATE
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastVisible, setToastVisible] = useState(false);
+    const toastTimeoutRef = useRef(null);
+
+    const showToast = useCallback((msg) => {
+        if (toastTimeoutRef.current) {
+            clearTimeout(toastTimeoutRef.current);
+        }
+        setToastMessage(msg);
+        setToastVisible(true);
+        toastTimeoutRef.current = setTimeout(() => {
+            setToastVisible(false);
+        }, 3000);
+    }, []);
+
+    // INTRO OVERLAY (600MS)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsPageLoaded(true);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // POINTER SPOTLIGHT (DESKTOP POINTER: FINE)
+    const handleMouseMove = useCallback((e) => {
+        if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
+            document.documentElement.style.setProperty('--cursor-x', `${e.clientX}px`);
+            document.documentElement.style.setProperty('--cursor-y', `${e.clientY}px`);
+        }
+    }, []);
+
+    // SINKRONISASI AUDIO HTML5 TUNGGAL & MEDIASESSION (PRELOAD NONE, TANPA AUTOPLAY)
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
@@ -60,7 +67,6 @@ const App = () => {
         audio.volume = 0.65;
         audio.loop = true;
 
-        // INTEGRASI MEDIASESSION BROWSER DAN PERANGKAT MOBILE
         if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
             try {
                 navigator.mediaSession.metadata = new MediaMetadata({
@@ -81,7 +87,6 @@ const App = () => {
         }
     }, []);
 
-    // FUNGSI UTAMA MEMULAI DAN MEMATIKAN MUSIK (HANYA AKTIF SAAT KLIK PLAY ATAU TOMBOL SUARA)
     const togglePlay = useCallback(() => {
         playClickHaptic(true);
         const audio = audioRef.current;
@@ -104,12 +109,18 @@ const App = () => {
         const siteUrl = settings.site.siteUrl || "https://karinnchans.my.id";
         try {
             await navigator.clipboard.writeText(siteUrl);
-        } catch (err) {}
-    }, [isPlaying]);
+            showToast("Tautan situs web berhasil disalin");
+        } catch (err) {
+            showToast("Gagal menyalin tautan");
+        }
+    }, [isPlaying, showToast]);
 
     return (
-        <div className="app-wrapper">
-            {/* ELEMEN AUDIO HTML5 TUNGGAL TERPUSAT (PRELOAD NONE AGAR NOL BANDWIDTH AWAL) */}
+        <div 
+            className={`portfolio-app-root ${isPageLoaded ? 'loaded' : 'loading'}`}
+            onMouseMove={handleMouseMove}
+        >
+            {/* 1. ELEMEN AUDIO HTML5 TUNGGAL */}
             <audio
                 ref={audioRef}
                 src={settings.music.audio}
@@ -127,168 +138,106 @@ const App = () => {
                 }}
             />
 
-            {/* LATAR BELAKANG VIDEO */}
+            {/* 2. OVERLAY INTRO 600MS SAAT LOAD */}
+            <div className={`page-intro-curtain ${isPageLoaded ? 'lifted' : ''}`} aria-hidden="true" />
+
+            {/* 3. LATAR BELAKANG VIDEO & JARINGAN TITIK CANVAS */}
+            <NetworkCanvas />
+
             <video autoPlay muted loop playsInline preload="metadata" id="bg-video">
                 <source src={settings.profile.videoBg} type="video/mp4" />
             </video>
 
-            {/* OVERLAY GRID CYBER INDUSTRI */}
-            <div className="cyber-grid-overlay" />
+            {/* OVERLAY SANGAT GELAP (#040C1C OPACITY 0.88) & GRID DRIFT */}
+            <div className="portfolio-dark-scrim" aria-hidden="true" />
+            <div className="portfolio-grid-drift" aria-hidden="true" />
+            <div className="portfolio-cursor-spotlight" aria-hidden="true" />
 
-            {/* BAR TINDAKAN HUD ATAS */}
-            <header className="top-hud-bar">
-                <HudClock />
+            {/* 4. NAVBAR STICKY TIPIS DENGAN PROGRESS BAR */}
+            <Navbar 
+                isPlaying={isPlaying}
+                onTogglePlay={togglePlay}
+                onCopySite={handleCopySite}
+                onOpenSearch={() => setIsSearchOpen(true)}
+            />
 
-                <div className="hud-actions-group">
-                    {/* TOMBOL TOGGLE SUARA & MUSIK: SINKRON 100% DENGAN DOCK PEMUTAR MUSIK */}
-                    <button 
-                        className="hud-circle-btn"
-                        onClick={togglePlay}
-                        title={isPlaying ? "Musik Berputar (Klik untuk Mematikan / Menjeda)" : "Musik Mati (Klik untuk Memulai Musik)"}
-                        aria-label={isPlaying ? "Matikan musik" : "Mulai musik"}
-                    >
-                        {isPlaying ? <Volume2 size={16} /> : <VolumeX size={16} />}
-                    </button>
+            {/* 5. STRUKTUR UTAMA HALAMAN PORTOFOLIO */}
+            <main className="portfolio-main-layout">
+                {/* HERO SECTION */}
+                <HeroSection soundEnabled={isPlaying} />
 
-                    <button 
-                        className="hud-circle-btn" 
-                        onClick={handleCopySite}
-                        title="Salin Situs Web (https://karinnchans.my.id)"
-                        aria-label="Salin tautan situs web"
-                    >
-                        <Share2 size={16} />
-                    </button>
-                </div>
-            </header>
+                {/* 01 / STACK MARQUEE */}
+                <StackMarquee />
 
-            {/* AREA KONTEN UTAMA */}
-            <main className="main-content-area">
-                <div className="profile-container">
-                    {/* HERO PROFIL */}
-                    <div className="profile-hero">
-                        <div className="avatar-frame-outer">
-                            <span className="corner-bracket top-left" />
-                            <span className="corner-bracket top-right" />
-                            <span className="corner-bracket bottom-left" />
-                            <span className="corner-bracket bottom-right" />
-                            <div className="avatar-wrapper">
-                                <img 
-                                    src={settings.profile.avatar} 
-                                    alt={settings.profile.name} 
-                                    className="avatar-image" 
-                                    loading="eager"
-                                    decoding="async"
-                                />
-                            </div>
-                        </div>
+                {/* 02 / METRIK & ANALITIK SISTEM */}
+                <MetricsDashboard soundEnabled={isPlaying} />
 
-                        <h1 className="display-name">{settings.profile.name}</h1>
-                        <p className="handle-text">{settings.profile.handle}</p>
+                {/* 03 / PROJECT GRID (INTI PORTOFOLIO) */}
+                <ProjectGrid 
+                    soundEnabled={isPlaying}
+                    onShowToast={showToast}
+                    selectedProjectIndex={selectedProjectIndex}
+                    onSelectProject={setSelectedProjectIndex}
+                />
 
-                        <div className="role-headline">
-                            <span>{settings.profile.title}</span>
-                            <span className="headline-divider">•</span>
-                            <span className="location-tag">
-                                <MapPin size={12} />
-                                {settings.profile.location}
-                            </span>
-                        </div>
+                {/* 03 / KOMUNITAS (BENTO DASHBOARD) */}
+                <CommunityBento 
+                    isPlaying={isPlaying}
+                    onTogglePlay={togglePlay}
+                    soundEnabled={isPlaying}
+                    onShowToast={showToast}
+                    onOpenPlayerSheet={() => setIsPlayerSheetOpen(true)}
+                />
 
-                        <p className="profile-bio-text">
-                            {settings.profile.bio}
-                        </p>
-                    </div>
+                {/* 04 / KONTAK / LINK EDITORIAL (KARTU SOSIAL INTERAKTIF) */}
+                <ContactEditorial 
+                    soundEnabled={isPlaying}
+                    onShowToast={showToast}
+                    expandedSocialId={expandedSocialId}
+                    onToggleSocial={setExpandedSocialId}
+                />
 
-                    {/* WIDGET KOMUNITAS: SALURAN, GRUP WHATSAPP, & DISCORD */}
-                    <WhatsAppChannelCard 
-                        channelUrl={settings.profile.whatsappChannel || "https://whatsapp.com/channel/0029VbCz8aUHAdNOPaBL1P3j"}
-                        groupUrl={settings.profile.whatsappGroup || "https://chat.whatsapp.com/IFVpqBdZIOGHvdcT1ngaiD"}
-                        discordUrl={settings.profile.discordServer || "https://discord.gg/aDmrbdKanG"}
-                        soundEnabled={isPlaying}
-                    />
-
-                    {/* DAFTAR TAUTAN LINKTREE BERSIH & SIMETRIS */}
-                    <div className="simple-links-list">
-                        {settings.links.map((link) => (
-                            <a 
-                                key={link.id}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="linktree-btn"
-                                onClick={() => playClickHaptic(isPlaying)}
-                            >
-                                <div className="linktree-icon-box">
-                                    {link.icon === 'sociabuzz' ? (
-                                        <SociaBuzzIcon size={19} />
-                                    ) : (
-                                        <i className={link.icon}></i>
-                                    )}
-                                </div>
-
-                                <div className="linktree-text-col">
-                                    <span className="linktree-title">{link.title}</span>
-                                    <span className="linktree-subtitle">{link.subtitle}</span>
-                                </div>
-
-                                <div className="linktree-arrow">
-                                    <ArrowUpRight size={17} />
-                                </div>
-                            </a>
-                        ))}
-                    </div>
-
-                    {/* PEMISAH BAGIAN: TULISAN PROJECT DI TENGAH-TENGAH */}
-                    <div className="section-divider-center">
-                        <span className="section-divider-line" />
-                        <span className="section-divider-label">PROJECT</span>
-                        <span className="section-divider-line" />
-                    </div>
-
-                    {/* DAFTAR TOMBOL PROYEK DENGAN LOGO INTERNET BULAT */}
-                    <div className="simple-links-list">
-                        {settings.projects.map((proj) => (
-                            <a 
-                                key={proj.id}
-                                href={proj.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="linktree-btn"
-                                onClick={() => playClickHaptic(isPlaying)}
-                            >
-                                <div className="linktree-icon-box">
-                                    <i className={proj.icon}></i>
-                                </div>
-
-                                <div className="linktree-text-col">
-                                    <span className="linktree-title">{proj.title}</span>
-                                    <span className="linktree-subtitle">{proj.subtitle}</span>
-                                </div>
-
-                                <div className="linktree-arrow">
-                                    <ArrowUpRight size={17} />
-                                </div>
-                            </a>
-                        ))}
-                    </div>
-                </div>
-
-                {/* FOOTER KREDIT SIMETRIS DI TENGAH */}
-                <footer className="footer-credits">
-                    <p className="footer-text">
-                        © {new Date().getFullYear()} <strong>{settings.profile.name}</strong> • {settings.profile.handle}
-                    </p>
-                    <div className="footer-indicator">
-                        <span>Official Links</span>
-                    </div>
-                </footer>
+                {/* FOOTER PORTOFOLIO */}
+                <FooterSection soundEnabled={isPlaying} />
             </main>
 
-            {/* KAPSUL PEMUTAR MUSIK DI BAGIAN BAWAH */}
+            {/* 6. PEMUTAR MUSIK FIXED BOTTOM BAR */}
             <MusicPlayer 
-                isPlaying={isPlaying} 
+                isPlaying={isPlaying}
                 onTogglePlay={togglePlay}
                 needsInteraction={needsInteraction}
+                onOpenSheet={() => setIsPlayerSheetOpen(true)}
+            />
+
+            {/* 7. FULL PLAYER BOTTOM SHEET MODAL */}
+            <PlayerSheet 
+                isOpen={isPlayerSheetOpen}
+                onClose={() => setIsPlayerSheetOpen(false)}
+                isPlaying={isPlaying}
+                onTogglePlay={togglePlay}
+                audioElement={audioRef.current}
+                soundEnabled={isPlaying}
+            />
+
+            {/* 8. COMMAND PALETTE DIALOG (CTRL+K) */}
+            <CommandPalette 
+                isOpen={isSearchOpen}
+                onClose={() => setIsSearchOpen(false)}
+                onSelectProject={(idx) => {
+                    setSelectedProjectIndex(idx);
+                    const el = document.getElementById('project');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                onSelectSocial={(id) => {
+                    setExpandedSocialId(id);
+                }}
+                soundEnabled={isPlaying}
+            />
+
+            {/* 9. GLOBAL ACCESSIBLE TOAST NOTIFICATION */}
+            <Toast 
+                message={toastMessage}
+                visible={toastVisible}
             />
         </div>
     );
