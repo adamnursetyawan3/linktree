@@ -17,7 +17,7 @@ export const settings = {
         location: "Indonesia",
         stack: ["TypeScript", "React", "Node.js", "Express", "Tailwind CSS", "Cheerio"],
         whatsappChannel: "https://whatsapp.com/channel/0029VbCz8aUHAdNOPaBL1P3j",
-        whatsappGroup: "https://chat.whatsapp.com/IFVpqBdZIOGHvdcT1ngaiD",
+        whatsappGroup: "https://chat.whatsapp.com/KrIkzGPQnYg422rRH0aU0N?s=cl&p=a&mlu=4&ilr=4",
         discordServer: "https://discord.gg/aDmrbdKanG"
     },
     music: {
@@ -48,7 +48,7 @@ export const settings = {
             id: 2, 
             title: "WhatsApp Group", 
             subtitle: "Homescreen — Komunitas Diskusi",
-            url: "https://chat.whatsapp.com/IFVpqBdZIOGHvdcT1ngaiD",
+            url: "https://chat.whatsapp.com/KrIkzGPQnYg422rRH0aU0N?s=cl&p=a&mlu=4&ilr=4",
             icon: "fa-brands fa-whatsapp",
             tag: "Grup"
         },

@@ -202,7 +202,7 @@ const App = () => {
                     {/* WIDGET KOMUNITAS: SALURAN, GRUP WHATSAPP, & DISCORD */}
                     <WhatsAppChannelCard 
                         channelUrl={settings.profile.whatsappChannel || "https://whatsapp.com/channel/0029VbCz8aUHAdNOPaBL1P3j"}
-                        groupUrl={settings.profile.whatsappGroup || "https://chat.whatsapp.com/IFVpqBdZIOGHvdcT1ngaiD"}
+                        groupUrl={settings.profile.whatsappGroup || "https://chat.whatsapp.com/KrIkzGPQnYg422rRH0aU0N?s=cl&p=a&mlu=4&ilr=4"}
                         discordUrl={settings.profile.discordServer || "https://discord.gg/aDmrbdKanG"}
                         soundEnabled={isPlaying}
                     />

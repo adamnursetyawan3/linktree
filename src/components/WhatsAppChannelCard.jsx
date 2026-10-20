@@ -25,7 +25,7 @@ const fetchWithTimeout = async (url, timeoutMs = 4500) => {
 
 const WhatsAppChannelCard = memo(({ 
     channelUrl = "https://whatsapp.com/channel/0029VbCz8aUHAdNOPaBL1P3j", 
-    groupUrl = "https://chat.whatsapp.com/IFVpqBdZIOGHvdcT1ngaiD",
+    groupUrl = "https://chat.whatsapp.com/KrIkzGPQnYg422rRH0aU0N?s=cl&p=a&mlu=4&ilr=4",
     discordUrl = "https://discord.gg/aDmrbdKanG",
     soundEnabled = true
 }) => {
